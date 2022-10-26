@@ -67,6 +67,12 @@ jobs:
     # Add  MSBuild to the PATH: https://github.com/microsoft/setup-msbuild
     - name: Setup MSBuild.exe
       uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Nuget
+      uses: nuget/setup-nuget@v1
+        
+    - name: Nuget restore
+      run: nuget restore src/GitAnalyzer.sln
       
     - name: Build app for release
       run: msbuild src/GitAnalyzer.sln -t:rebuild -verbosity:diag -property:Configuration=Release
