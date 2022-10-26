@@ -100,6 +100,7 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
+    
     - name: Generate Changelog
       id: changelog
       uses: jaywcjlove/changelog-generator@main
@@ -107,6 +108,7 @@ jobs:
       with:
         head-ref: ${{steps.create_tag.outputs.version}}
         filter: (^[\s]+?[R|r]elease)|(^[R|r]elease)
+    
     - name: Upload Release Asset
       id: upload-release-asset 
       uses: actions/upload-release-asset@v1
