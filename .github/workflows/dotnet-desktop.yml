@@ -93,6 +93,7 @@ jobs:
       uses: AsasInnab/regex-action@v1
       with:
         regex_pattern: 'AssemblyFileVersion\(\"(\.*\"\))'
+        regex_flags: 'g'
         search_string: ${{ steps.package.outputs.content }}
         
     - run: echo "version - ${{ steps.create_tag.outputs.first_match }}"
