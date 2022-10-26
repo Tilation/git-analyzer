@@ -84,6 +84,7 @@ jobs:
         exclusions: '*.git* /*node_modules/* .editorconfig'
         
     - name: Read build version
+      id: read_build
       uses: juliangruber/read-file-action@v1.1.6
       with:
         path: src/Properties/AssemblyInfo.cs
@@ -94,7 +95,7 @@ jobs:
       with:
         regex_pattern: 'AssemblyFileVersion\(\"(\.*\"\))'
         regex_flags: 'g'
-        search_string: ${{ steps.package.outputs.content }}
+        search_string: ${{ steps.read_build.outputs.content }}
         
     - run: echo "version - ${{ steps.create_tag.outputs.first_match }}"
   
