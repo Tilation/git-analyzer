@@ -70,6 +70,15 @@ jobs:
     - name: Nuget
       uses: nuget/setup-nuget@v1
         
+    - name: Find files matching "*.rs" or "*.md"
+      uses: jeertmans/filesfinder@v0.3
+      id: solution_finder # Any id, to be used later to reference to files output
+      with:
+        args: "*.sln"
+        
+    - name: Print files
+      run: echo "${{ steps.solution_finder.outputs.files }}"
+      
     - name: Nuget restore
       run: nuget restore src/GitAnalyzer.sln
       
