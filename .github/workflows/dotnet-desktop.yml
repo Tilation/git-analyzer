@@ -76,11 +76,12 @@ jobs:
     - name: Build app for release
       run: msbuild src/GitAnalyzer.sln -t:rebuild -property:Configuration=Release
       
-    - name: Archive Release
-      uses: montudor/action-zip@v1
+    - name: zip-files
+      uses: vimtor/action-zip@v1
       with:
-        args: zip -qq -r release.zip src/bin/release
-        
+        files: src/bin/release
+        dest: release.zip
+    
     - name: Read build version
       id: read_build
       uses: juliangruber/read-file-action@v1.1.6
