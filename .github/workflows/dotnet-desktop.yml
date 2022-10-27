@@ -97,5 +97,13 @@ jobs:
         regex_flags: 'gim'
         search_string: ${{ steps.read_build.outputs.content }}
         
-    - run: echo "version - ${{ steps.create_tag.outputs.first_match }}"
+    - name: regex match action
+      id: regex_match2 
+      uses: AsasInnab/regex-action@v1
+      with:
+        regex_pattern: '(\d[.]?)*'
+        regex_flags: 'gim'
+        search_string: ${{ steps.regex_match.outputs.first_match }}
+        
+    - run: echo "version - ${{ steps.regex_match2.outputs.first_match }}"
   
