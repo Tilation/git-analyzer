@@ -71,7 +71,7 @@ jobs:
       uses: nuget/setup-nuget@v1
         
     - name: Nuget restore
-      run: nuget restore ${{PathToSolution}}/${{SolutionName}}
+      run: nuget restore ${{env.PathToSolution}}/${{SolutionName}}
       
     - name: Build app for release
       run: msbuild ${{PathToSolution}}/${{SolutionName}} -t:rebuild -property:Configuration=Release
