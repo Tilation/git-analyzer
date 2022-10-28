@@ -117,7 +117,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: release v${{ steps.regex_match2.outputs.first_match }}
+        tag_name: release-v${{ steps.regex_match2.outputs.first_match }}
         release_name: Release ${{ steps.regex_match2.outputs.first_match }}
         draft: false
         prerelease: false
