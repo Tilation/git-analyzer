@@ -74,7 +74,9 @@ jobs:
         
     - run: echo "version - ${{ steps.regex_match2.outputs.first_match }}"
     
-
+    - name: Create changelogs
+      id: changelogs
+      uses: heineiuo/create-changelogs@master 
     
     - name: Create Release
       id: create_release
@@ -86,12 +88,9 @@ jobs:
         release_name: Release ${{ steps.regex_match2.outputs.first_match }}
         draft: false
         prerelease: false
-        body: ${{ steps.changelog.outputs.changes }}
+        body: ${{ steps.changelogs.outputs.changelogs }}
         
-    - name: Generate some release notes
-      uses: daytime-em/release-notes-on-pr@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}    
+ 
         
     - name: Upload Release Asset
       id: upload-release-asset 
