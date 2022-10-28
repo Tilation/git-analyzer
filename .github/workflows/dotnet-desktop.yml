@@ -74,14 +74,7 @@ jobs:
         ReleaseVersion: release-v${{ steps.regex_match2.outputs.first_match }}
         
     - run: echo "version= ${{ env.ReleaseVersion }}"
-    
-    - name: Update CHANGELOG
-      id: changelog
-      uses: Requarks/changelog-action@v1
-      with:
-        token: ${{ github.token }}
-        tag: ${{ env.ReleaseVersion }}
-        
+  
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -92,9 +85,20 @@ jobs:
         release_name: Release ${{ steps.regex_match2.outputs.first_match }}
         draft: false
         prerelease: false
-        body: ${{ steps.changelogs.outputs.changes }}
         
- 
+    - name: Update CHANGELOG
+      id: changelog
+      uses: Requarks/changelog-action@v1
+      with:
+        token: ${{ github.token }}
+        tag: ${{ env.ReleaseVersion }}
+        
+    - name: Edit Release
+      uses: irongut/EditRelease@v1.2.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        id: ${{ steps.create_release.outputs.id }}
+        body: ${{ steps.changelog.outputs.changes}}
         
     - name: Upload Release Asset
       id: upload-release-asset 
