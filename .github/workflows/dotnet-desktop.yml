@@ -9,8 +9,10 @@ jobs:
         configuration: [Release]
     runs-on: windows-2019  
     env:
+      PathToVersionFile: src/GitAnalyzer/Properties/Properties/AssemblyInfo.cs
       PathToSolution: src
       SolutionName: GitAnalyzer.sln
+      PathToBinaries: src/GitAnalyzer/bin/Release
       
     steps:
     - name: Checkout
@@ -33,14 +35,14 @@ jobs:
     - name: zip-files
       uses: vimtor/action-zip@v1
       with:
-        files: ${{env.PathToSolution}}/bin/release
+        files: ${{env.PathToBinaries}}
         dest: release.zip
     
     - name: Read build version
       id: read_build
       uses: juliangruber/read-file-action@v1.1.6
       with:
-        path: ${{env.PathToSolution}}/Properties/AssemblyInfo.cs
+        path: ${{env.PathToVersionFile}}
         
     - name: regex match action
       id: regex_match 
