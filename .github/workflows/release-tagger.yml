@@ -53,6 +53,6 @@ jobs:
     - name: Tag commit as release
       uses: tvdias/github-tagger@v0.0.1
       with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        repo-token: "${{ secrets.MICROWAVE_TECHNICIAN }}"
         tag: ${{env.ReleaseVersion}}
   
