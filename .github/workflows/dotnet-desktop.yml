@@ -1,7 +1,8 @@
-name: Build .Net Framework & Release
-on:
+name: Create tag on Version Change
+on: 
   push:
     branches: 'main'
+    
 jobs:
   build:
     strategy:
@@ -22,37 +23,13 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Setup MSBuild.exe
-      uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Nuget
-      uses: nuget/setup-nuget@v1
-        
-    - name: Nuget restore
-      run: nuget restore ${{env.PathToSolution}}/${{env.SolutionName}}
-      
-    - name: Build app for release
-      run: msbuild ${{env.PathToSolution}}/${{env.SolutionName}} -t:rebuild -property:Configuration=Release
-      
-    - name: Zip GitAnalyzer Release
-      uses: vimtor/action-zip@v1
-      with:
-        files: ${{env.PathToBinaries}}
-        dest: release.zip
-        
-    - name: Zip Plugins Solution
-      uses: vimtor/action-zip@v1
-      with:
-        files: ${{env.PathToPlugins}}
-        dest: plugins.zip
-    
     - name: Read build version
       id: read_build
       uses: juliangruber/read-file-action@v1.1.6
       with:
         path: ${{env.PathToVersionFile}}
         
-    - name: regex match action
+    - name: Refine version string
       id: regex_match 
       uses: AsasInnab/regex-action@v1
       with:
@@ -60,7 +37,7 @@ jobs:
         regex_flags: 'gim'
         search_string: ${{ steps.read_build.outputs.content }}
         
-    - name: regex match action
+    - name: Refine version string 2
       id: regex_match2 
       uses: AsasInnab/regex-action@v1
       with:
@@ -68,56 +45,14 @@ jobs:
         regex_flags: 'gim'
         search_string: ${{ steps.regex_match.outputs.first_match }}
         
-    - name: set-env
+    - name: Set Release Version
       uses: allenevans/set-env@v2.0.0
       with:
         ReleaseVersion: release-v${{ steps.regex_match2.outputs.first_match }}
         
-    - run: echo "version= ${{ env.ReleaseVersion }}"
+    - name: Tag commit as release
+      uses: tvdias/github-tagger@v0.0.1
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        tag: ${{env.ReleaseVersion}}
   
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ env.ReleaseVersion }}
-        release_name: Release ${{ steps.regex_match2.outputs.first_match }}
-        draft: false
-        prerelease: false
-        
-    - name: Update CHANGELOG
-      id: changelog
-      uses: Requarks/changelog-action@v1
-      with:
-        token: ${{ github.token }}
-        tag: ${{ env.ReleaseVersion }}
-        
-    - name: Edit Release
-      uses: irongut/EditRelease@v1.2.0
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        id: ${{ steps.create_release.outputs.id }}
-        body: ${{ steps.changelog.outputs.changes}}
-        
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./release.zip
-        asset_name: git-analyzer-v${{ steps.regex_match2.outputs.first_match }}.zip
-        asset_content_type: application/zip
-        
-    - name: Upload Plugins Solution
-      id: upload-plugins-asset 
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-        asset_path: ./plugins.zip
-        asset_name: git-analyzer-plugin-creation-solution-v${{ steps.regex_match2.outputs.first_match }}.zip
-        asset_content_type: application/zip
