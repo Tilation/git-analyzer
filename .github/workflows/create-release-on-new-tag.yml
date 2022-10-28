@@ -1,0 +1,100 @@
+name: Create release on new release tag
+on:
+  push:
+    branches: 'main'
+    tags: 'release-*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Release]
+    runs-on: windows-2019  
+    env:
+      ReleaseVersion: not-set
+      PathToPlugins: src/Plugins
+      PathToVersionFile: src/GitAnalyzer/Properties/AssemblyInfo.cs
+      PathToSolution: src
+      SolutionName: GitAnalyzer.sln
+      PathToBinaries: src/GitAnalyzer/bin/Release
+      
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: echo ref
+      run: echo ${{}}
+
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Nuget
+      uses: nuget/setup-nuget@v1
+
+    - name: Nuget restore
+      run: nuget restore ${{env.PathToSolution}}/${{env.SolutionName}}
+
+    - name: Build app for release
+      run: msbuild ${{env.PathToSolution}}/${{env.SolutionName}} -t:rebuild -property:Configuration=Release
+
+    - name: Zip GitAnalyzer Release
+      uses: vimtor/action-zip@v1
+      with:
+        files: ${{env.PathToBinaries}}
+        dest: release.zip
+
+    - name: Zip Plugins Solution
+      uses: vimtor/action-zip@v1
+      with:
+        files: ${{env.PathToPlugins}}
+        dest: plugins.zip
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+
+    - name: Update CHANGELOG
+      id: changelog
+      uses: Requarks/changelog-action@v1
+      with:
+        token: ${{ github.token }}
+        tag: ${{ github.ref_name }}
+
+    - name: Edit Release
+      uses: irongut/EditRelease@v1.2.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        id: ${{ steps.create_release.outputs.id }}
+        body: ${{ steps.changelog.outputs.changes}}
+
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./release.zip
+        asset_name: git-analyzer-v${{ steps.regex_match2.outputs.first_match }}.zip
+        asset_content_type: application/zip
+
+    - name: Upload Plugins Solution
+      id: upload-plugins-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./plugins.zip
+        asset_name: git-analyzer-plugin-creation-solution-v${{ steps.regex_match2.outputs.first_match }}.zip
+        asset_content_type: application/zip
