@@ -5,6 +5,8 @@ VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitAnalyzer", "GitAnalyzer.csproj", "{28D826B6-D33B-410A-A499-F116665F0583}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitAnalyzer.Modules", "..\GitAnalyzer.Modules\GitAnalyzer.Modules.csproj", "{5A63204F-6B21-4606-AB58-962772F8BAE5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{28D826B6-D33B-410A-A499-F116665F0583}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28D826B6-D33B-410A-A499-F116665F0583}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28D826B6-D33B-410A-A499-F116665F0583}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A63204F-6B21-4606-AB58-962772F8BAE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A63204F-6B21-4606-AB58-962772F8BAE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A63204F-6B21-4606-AB58-962772F8BAE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A63204F-6B21-4606-AB58-962772F8BAE5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
