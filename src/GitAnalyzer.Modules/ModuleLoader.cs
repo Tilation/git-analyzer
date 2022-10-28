@@ -23,15 +23,16 @@ namespace GitAnalyzer.Modules
         {
             List<BaseModule> modules = new List<BaseModule>();
             if (!Directory.Exists(ModulesFolder)) Directory.CreateDirectory(ModulesFolder);
-            var dlls = Directory.EnumerateFiles(ModulesFolder, "*.dll").ToArray();
+            var dlls = Directory.EnumerateFiles(Path.Combine(Environment.CurrentDirectory,ModulesFolder), "*.dll").ToArray();
             foreach(var dll in dlls)
             {
                 try
                 {
                     var assembly = Assembly.LoadFile(dll);
                     if (assembly == null) continue;
-                    var mods = assembly.GetTypes().Where(x => x.BaseType == typeof(BaseModule))
-                        .Select(x=>(BaseModule)Activator.CreateInstance(x));
+                    var types = assembly.GetTypes();
+                    var mods = types.Where(x => x.BaseType == typeof(BaseModule))
+                        .Select(x=>(BaseModule)Activator.CreateInstance(x)).ToArray();
                     modules.AddRange(mods);
                 }
                 catch(Exception ex)
