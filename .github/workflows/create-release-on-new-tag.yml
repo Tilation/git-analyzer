@@ -2,6 +2,7 @@ name: Create release on new release tag
 on:
   push:
     tags: 'release-*'
+    branches: 'main'
 
 jobs:
   build:
