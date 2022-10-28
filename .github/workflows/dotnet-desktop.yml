@@ -71,22 +71,22 @@ jobs:
       uses: nuget/setup-nuget@v1
         
     - name: Nuget restore
-      run: nuget restore $PathToSolution/$SolutionName
+      run: nuget restore ${{PathToSolution}}/${{SolutionName}}
       
     - name: Build app for release
-      run: msbuild $PathToSolution/$SolutionName -t:rebuild -property:Configuration=Release
+      run: msbuild ${{PathToSolution}}/${{SolutionName}} -t:rebuild -property:Configuration=Release
       
     - name: zip-files
       uses: vimtor/action-zip@v1
       with:
-        files: $PathToSolution/bin/release
+        files: ${{PathToSolution}}/bin/release
         dest: release.zip
     
     - name: Read build version
       id: read_build
       uses: juliangruber/read-file-action@v1.1.6
       with:
-        path: $PathToSolution/Properties/AssemblyInfo.cs
+        path: ${{PathToSolution}}/Properties/AssemblyInfo.cs
         
     - name: regex match action
       id: regex_match 
