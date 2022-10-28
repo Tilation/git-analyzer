@@ -146,8 +146,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GitAnalyzer.Modules\GitAnalyzer.Modules.csproj">
-      <Project>{5A63204F-6B21-4606-AB58-962772F8BAE5}</Project>
+    <ProjectReference Include="..\Plugins\GitAnalyzer.Modules\GitAnalyzer.Modules.csproj">
+      <Project>{5a63204f-6b21-4606-ab58-962772f8bae5}</Project>
       <Name>GitAnalyzer.Modules</Name>
     </ProjectReference>
   </ItemGroup>
