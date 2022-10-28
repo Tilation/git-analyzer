@@ -74,6 +74,14 @@ jobs:
         
     - run: echo "version - ${{ steps.regex_match2.outputs.first_match }}"
     
+    - name: conventional changelog action
+      id: changelog
+      # https://github.com/TriPSs/conventional-changelog-action
+      uses: TriPSs/conventional-changelog-action@latest
+      with:
+        # you can also create separate token to trace action
+        github-token: "${{ secrets.GITHUB_TOKEN }}"
+    
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -84,6 +92,7 @@ jobs:
         release_name: Release ${{ steps.regex_match2.outputs.first_match }}
         draft: false
         prerelease: false
+        body: ${{steps.changelog.outputs.clean_changelog}}
         
     - name: Upload Release Asset
       id: upload-release-asset 
