@@ -36,7 +36,7 @@
 # For a complete CI/CD sample to get started with GitHub Action workflows for Desktop Applications,
 # refer to https://github.com/microsoft/github-actions-for-desktop-apps
 
-name: .NET Core Desktop
+name: Build .Net Framework & Release
 
 on:
   push:
@@ -54,8 +54,8 @@ jobs:
                              # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
 
     env:
-      Solution_Name: GitAnalyzer.sln                        # Replace with your solution name, i.e. MyWpfApp.sln.
-      Release_Version: 1.0.0.0
+      PathToSolution: src
+      SolutionName: GitAnalyzer.sln                        # Replace with your solution name, i.e. MyWpfApp.sln.
       
     steps:
     - name: Checkout
@@ -80,22 +80,22 @@ jobs:
       run: echo "${{ steps.solution_finder.outputs.files }}"
       
     - name: Nuget restore
-      run: nuget restore src/GitAnalyzer.sln
+      run: nuget restore $PathToSolution/$SolutionName
       
     - name: Build app for release
-      run: msbuild src/GitAnalyzer.sln -t:rebuild -property:Configuration=Release
+      run: msbuild $PathToSolution/$SolutionName -t:rebuild -property:Configuration=Release
       
     - name: zip-files
       uses: vimtor/action-zip@v1
       with:
-        files: src/bin/release
+        files: $PathToSolution/bin/release
         dest: release.zip
     
     - name: Read build version
       id: read_build
       uses: juliangruber/read-file-action@v1.1.6
       with:
-        path: src/Properties/AssemblyInfo.cs
+        path: $PathToSolution/Properties/AssemblyInfo.cs
         
     - name: regex match action
       id: regex_match 
@@ -126,7 +126,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: r${{ steps.regex_match2.outputs.first_match }}
+        tag_name: release v${{ steps.regex_match2.outputs.first_match }}
         release_name: Release ${{ steps.regex_match2.outputs.first_match }}
         draft: false
         prerelease: false
@@ -139,6 +139,6 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
         asset_path: ./release.zip
-        asset_name: git-big-files v${{ steps.regex_match2.outputs.first_match }}.zip
+        asset_name: git-big-files-v${{ steps.regex_match2.outputs.first_match }}.zip
         asset_content_type: application/zip
 
