@@ -2,7 +2,7 @@ name: Create tag for release
 on: 
   push:
     branches: 'main'
-    
+    paths: 'src/GitAnalyzer/Properties/AssemblyInfo.cs'
 jobs:
   build:
     strategy:
