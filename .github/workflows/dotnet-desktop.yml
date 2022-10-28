@@ -9,6 +9,7 @@ jobs:
         configuration: [Release]
     runs-on: windows-2019  
     env:
+      PathToPlugins: src/Plugins
       PathToVersionFile: src/GitAnalyzer/Properties/Properties/AssemblyInfo.cs
       PathToSolution: src
       SolutionName: GitAnalyzer.sln
@@ -32,11 +33,17 @@ jobs:
     - name: Build app for release
       run: msbuild ${{env.PathToSolution}}/${{env.SolutionName}} -t:rebuild -property:Configuration=Release
       
-    - name: zip-files
+    - name: Zip GitAnalyzer Release
       uses: vimtor/action-zip@v1
       with:
         files: ${{env.PathToBinaries}}
         dest: release.zip
+        
+    - name: Zip Plugins Solution
+      uses: vimtor/action-zip@v1
+      with:
+        files: ${{env.PathToPlugins}}
+        dest: plugins.zip
     
     - name: Read build version
       id: read_build
@@ -86,5 +93,16 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
         asset_path: ./release.zip
-        asset_name: git-big-files-v${{ steps.regex_match2.outputs.first_match }}.zip
+        asset_name: git-analyzer-v${{ steps.regex_match2.outputs.first_match }}.zip
+        asset_content_type: application/zip
+        
+    - name: Upload Plugins Solution
+      id: upload-plugins-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./plugins.zip
+        asset_name: git-analyzer-plugin-creation-solution-v${{ steps.regex_match2.outputs.first_match }}.zip
         asset_content_type: application/zip
