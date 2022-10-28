@@ -7,5 +7,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Conventional Commits
-        uses: crqra/conventional-commits-action@1.0.0
-    
+      - uses: actions/checkout@v2
+      - uses: webiny/action-conventional-commits@v1.0.3
