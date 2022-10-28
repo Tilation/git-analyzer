@@ -1,15 +1,10 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
-namespace GitAnalyzer
+namespace GitAnalyzer.Modules.GitObjects
 {
-    internal class GitRepo
+    public class GitRepository
     {
         public event Action<string> UpdateProgress;
         public event Action Finished;
@@ -33,9 +28,18 @@ namespace GitAnalyzer
 
         public string RepositoryPath { get; set; }
         public GitObject[] Objects { get; set; }
-        public GitRepo(string path)
+        public GitRepository(string path)
         {
             RepositoryPath = path;
+        }
+
+        public bool Exists()
+        {
+            if (RunGit("git status 2", out string output))
+            {
+                return !output.StartsWith("fatal:");
+            }
+            return false;
         }
 
         public bool RunGit(string command, out string output)

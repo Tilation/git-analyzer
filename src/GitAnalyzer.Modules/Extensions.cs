@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GitAnalyzer
+namespace GitAnalyzer.Modules
 {
     public static class Extensions
     {

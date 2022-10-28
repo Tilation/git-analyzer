@@ -1,23 +1,25 @@
-﻿using Newtonsoft.Json;
+﻿using GitAnalyzer.Modules;
+using GitAnalyzer.Modules.GitObjects;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Forms.VisualStyles;
 
-namespace GitAnalyzer
+namespace GitAnalyzer.Modules.BuiltIn
 {
-    internal static class GitObjects
+    public class GitObjects : BaseModule
     {
-        static Regex reg = new Regex(@"(\w+)\s+(\w+)\s+(\w+)\s+(.*?)\s+(.*)", RegexOptions.Compiled);
-        public static void GetGitObjects(this GitRepo repo)
+        private readonly Regex reg = new Regex(@"(\w+)\s+(\w+)\s+(\w+)\s+(.*?)\s+(.*)", RegexOptions.Compiled);
+
+        public override object ModuleParameters => new object();
+        public override string ModuleName => "List historic files";
+        public override Func<object, object> DefaultSort => x => ((GitObject)x)?.FileSizeInBytes;
+
+        protected override void ExecuteModule(GitRepository repo)
         {
             BackgroundWorker bgWorker = new BackgroundWorker();
             bgWorker.WorkerReportsProgress = true;
@@ -37,23 +39,23 @@ namespace GitAnalyzer
                 var sorted = gitObjects.OrderByDescending(x => x.FileSizeInBytes).ToArray();
 
                 bgWorker.ReportProgress(0, $"Ready!");
-                repo.Objects = sorted;
+                e.Result = sorted;
             };
             bgWorker.RunWorkerCompleted += (s, e) =>
             {
-                repo.Finish();
+                SubmitExecutionResults(e.Result as IList);
             };
             bgWorker.ProgressChanged += (s, e) =>
             {
-                repo.Report(e.UserState.ToString());
+                SubmitProgressChanged(e.UserState.ToString());
             };
             bgWorker.RunWorkerAsync();
         }
 
-        private static GitObject[] ProcessChunks(GitRepo repo, IEnumerable<string>[] chunked, BackgroundWorker bgWorker)
+        private GitObject[] ProcessChunks(GitRepository repo, IEnumerable<string>[] chunked, BackgroundWorker bgWorker)
         {
             ConcurrentDictionary<string, GitObject> rawResults = new ConcurrentDictionary<string, GitObject>();
-            Parallel.For(0,chunked.Length, chunkIndx =>
+            Parallel.For(0, chunked.Length, chunkIndx =>
             {
                 var chunk = chunked[chunkIndx];
                 Parallel.ForEach(chunk, (commit) =>
@@ -68,7 +70,7 @@ namespace GitAnalyzer
                                 match.Groups[4].Value,
                                 match.Groups[5].Value);
                             if (!rawResults.TryAdd(obj.GitHash, obj))
-                                if (rawResults.TryGetValue(obj.GitHash, out var obj2)) 
+                                if (rawResults.TryGetValue(obj.GitHash, out var obj2))
                                     obj2.Hits++;
                         }
                     }
@@ -77,5 +79,6 @@ namespace GitAnalyzer
             });
             return rawResults.Values.ToArray();
         }
+
     }
 }
