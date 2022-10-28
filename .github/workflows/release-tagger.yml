@@ -1,4 +1,4 @@
-name: Create tag on Version Change
+name: Create tag for release
 on: 
   push:
     branches: 'main'
