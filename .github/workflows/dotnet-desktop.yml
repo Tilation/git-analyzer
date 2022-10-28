@@ -9,6 +9,7 @@ jobs:
         configuration: [Release]
     runs-on: windows-2019  
     env:
+      ReleaseVersion: not-set
       PathToPlugins: src/Plugins
       PathToVersionFile: src/GitAnalyzer/Properties/AssemblyInfo.cs
       PathToSolution: src
@@ -70,25 +71,28 @@ jobs:
     - name: set-env
       uses: allenevans/set-env@v2.0.0
       with:
-        Release_Version: ${{ steps.regex_match.outputs.first_match }}
+        ReleaseVersion: release-v${{ steps.regex_match2.outputs.first_match }}
         
-    - run: echo "version - ${{ steps.regex_match2.outputs.first_match }}"
+    - run: echo "version= ${{ env.ReleaseVersion }}"
     
-    - name: Create changelogs
-      id: changelogs
-      uses: heineiuo/create-changelogs@master 
-    
+    - name: Update CHANGELOG
+      id: changelog
+      uses: Requarks/changelog-action@v1
+      with:
+        token: ${{ github.token }}
+        tag: ${{ env.ReleaseVersion }}
+        
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: release-v${{ steps.regex_match2.outputs.first_match }}
+        tag_name: ${{ env.ReleaseVersion }}
         release_name: Release ${{ steps.regex_match2.outputs.first_match }}
         draft: false
         prerelease: false
-        body: ${{ steps.changelogs.outputs.changelogs }}
+        body: ${{ steps.changelogs.outputs.changes }}
         
  
         
