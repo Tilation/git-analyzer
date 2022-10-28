@@ -74,11 +74,7 @@ jobs:
         
     - run: echo "version - ${{ steps.regex_match2.outputs.first_match }}"
     
-    - name: Create changelog text
-      id: changelog
-      uses: loopwerk/tag-changelog@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+
     
     - name: Create Release
       id: create_release
@@ -91,6 +87,11 @@ jobs:
         draft: false
         prerelease: false
         body: ${{ steps.changelog.outputs.changes }}
+        
+    - name: Generate some release notes
+      uses: daytime-em/release-notes-on-pr@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}    
         
     - name: Upload Release Asset
       id: upload-release-asset 
