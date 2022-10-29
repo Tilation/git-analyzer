@@ -48,7 +48,7 @@ jobs:
     - name: Set Release Version
       uses: allenevans/set-env@v2.0.0
       with:
-        ReleaseVersion: release-v${{ steps.regex_match2.outputs.first_match }}
+        ReleaseVersion: v${{ steps.regex_match2.outputs.first_match }}
         
     - name: Tag commit as release
       uses: tvdias/github-tagger@v0.0.1
