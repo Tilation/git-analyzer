@@ -12,6 +12,7 @@ This software was made to have a more visual way of doing GIT things.
 - More actions.
 - Better documentation.
 - Better plugin framework.
+- Branch selection. (Now it runs on the checked-out branch)
 
 ## ⚒️ Creating plugins 🛠️
 Once you run the aplication, a folder called `/modules` will be created, you need to put the dll plugins there.
