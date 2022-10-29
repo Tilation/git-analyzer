@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="BaseModule.cs" />
     <Compile Include="BuiltIn\GitHistoricFiles.cs" />
+    <Compile Include="BuiltIn\GitCommitsPerAuthor.cs" />
     <Compile Include="ExecutionFinishedEventArgs.cs" />
     <Compile Include="ExecutionProgressChangedEventArgs.cs" />
     <Compile Include="Extensions.cs" />

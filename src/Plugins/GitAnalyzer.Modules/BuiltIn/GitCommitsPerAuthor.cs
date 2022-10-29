@@ -1,22 +1,29 @@
-﻿using GitAnalyzer.Modules;
-using GitAnalyzer.Modules.GitObjects;
+﻿using GitAnalyzer.Modules.GitObjects;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace GitAnalyzer.Modules.BuiltIn
 {
-    public sealed class GitHistoricFiles : BaseModule
+    public sealed class GitCommitsPerAuthor : BaseModule
     {
-        private readonly Regex reg = new Regex(@"(\w+)\s+(\w+)\s+(\w+)\s+(.*?)\s+(.*)", RegexOptions.Compiled);
-        public override string ModuleName => "List historic files";
-        public override Func<object, object> DefaultSort => x => ((GitObject)x)?.FileSizeInBytes;
+        public class GitAuthorCounter
+        {
+            [Searchable]
+            public string Author { get; set; }
+            [Searchable]
+            public int CommitAmount { get; set; }
+        }
 
+        public override string ModuleName => "Commits per Author";
+        public override Func<object, object> DefaultSort => x => ((GitAuthorCounter)x).CommitAmount;
+        
         protected override void ExecuteModule(GitRepository repo)
         {
             var branches = repo.GetBranchNames();
@@ -36,7 +43,7 @@ namespace GitAnalyzer.Modules.BuiltIn
                 bgWorker.ReportProgress(0, $"Found {gitObjects.Length} unique objects");
 
                 bgWorker.ReportProgress(0, $"Sorting by size...");
-                var sorted = gitObjects.OrderByDescending(x => x.FileSizeInBytes).ToArray();
+                var sorted = gitObjects.OrderByDescending(x => x.CommitAmount).ToArray();
 
                 bgWorker.ReportProgress(0, $"Ready!");
                 e.Result = sorted;
@@ -52,33 +59,22 @@ namespace GitAnalyzer.Modules.BuiltIn
             bgWorker.RunWorkerAsync();
         }
 
-        private GitObject[] ProcessChunks(GitRepository repo, IEnumerable<string>[] chunked, BackgroundWorker bgWorker)
+        private GitAuthorCounter[] ProcessChunks(GitRepository repo, IEnumerable<string>[] chunked, BackgroundWorker bgWorker)
         {
-            ConcurrentDictionary<string, GitObject> rawResults = new ConcurrentDictionary<string, GitObject>();
+            ConcurrentDictionary<string, int> rawResults = new ConcurrentDictionary<string, int>();
             Parallel.For(0, chunked.Length, chunkIndx =>
             {
                 var chunk = chunked[chunkIndx];
                 Parallel.ForEach(chunk, (commit) =>
                 {
-                    if (repo.RunGit($"git ls-tree -r --long {commit}", out string output))
+                    if (repo.RunGit($" git log -1 --format='%ae' {commit}", out string output))
                     {
-                        foreach (Match match in reg.Matches(output))
-                        {
-                            var obj = new GitObject(match.Groups[1].Value,
-                                match.Groups[2].Value,
-                                match.Groups[3].Value,
-                                match.Groups[4].Value,
-                                match.Groups[5].Value);
-                            if (!rawResults.TryAdd(obj.GitHash, obj))
-                                if (rawResults.TryGetValue(obj.GitHash, out var obj2))
-                                    obj2.Hits++;
-                        }
+                        rawResults.AddOrUpdate(output, 1, (k, v) => v + 1);
                     }
                 });
-                bgWorker.ReportProgress(0, $"Chunk {chunkIndx} of {chunked.Length}, total objects: {rawResults.Count}");
+                bgWorker.ReportProgress(0, $"Chunk {chunkIndx} of {chunked.Length}, total authors: {rawResults.Count}");
             });
-            return rawResults.Values.ToArray();
+            return rawResults.Select(x=> new GitAuthorCounter { Author = x.Key, CommitAmount = x.Value}).ToArray();
         }
-
     }
 }
