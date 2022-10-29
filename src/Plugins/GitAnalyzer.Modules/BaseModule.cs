@@ -8,7 +8,8 @@ namespace GitAnalyzer.Modules
     {
         public abstract string ModuleName { get; }
         public IList ModuleResult { get; private set; }
-        public abstract object ModuleParameters { get; }
+        public virtual ModuleParameters ModuleParameters { get; } = new ModuleParameters();
+        public virtual Func<object, object> DefaultSort => null;
 
         public delegate void ExecutionProgressChanged(BaseModule sender, ExecutionProgressChangedEventArgs state);
         public delegate void ExecutionResultSubmitted(BaseModule sender, ExecutionFinishedEventArgs args);
@@ -16,7 +17,7 @@ namespace GitAnalyzer.Modules
         public event ExecutionProgressChanged ModuleProgressChanged;
         public event ExecutionResultSubmitted ModuleExecutionFinished;
 
-        public abstract Func<object, object> DefaultSort { get; }
+
 
         protected abstract void ExecuteModule(GitRepository repo);
 
@@ -33,7 +34,13 @@ namespace GitAnalyzer.Modules
 
         public void Run(GitRepository repo)
         {
-            ExecuteModule(repo);
+            if (repo.TryCheckOutBranch(ModuleParameters.Branch)) ExecuteModule(repo);
+        }
+
+        public void SetResult(IList list)
+        {
+            ModuleResult = list;
+            ModuleExecutionFinished?.Invoke(this, new ExecutionFinishedEventArgs { Result = ModuleResult });
         }
     }
 }

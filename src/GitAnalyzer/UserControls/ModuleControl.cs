@@ -1,5 +1,6 @@
 ﻿using GitAnalyzer.Modules;
 using GitAnalyzer.Modules.GitObjects;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -55,12 +57,23 @@ namespace GitAnalyzer.UserControls
                                     }
                                 }
                             });
+
+                            // If a sorting method exists, sort.
                             results = new List<object>();
                             var type = obj.GetType();
-                            foreach (var item in bag.OrderByDescending(x => Module.DefaultSort(x)))
+                            if (Module.DefaultSort != null)
                             {
-                                // Not proud of this, please help me T_T
-                                results.Add(Convert.ChangeType(item, type));
+                                foreach (var item in bag.OrderByDescending(x => Module.DefaultSort(x)))
+                                {
+                                    results.Add(Convert.ChangeType(item, type));
+                                }
+                            }
+                            else
+                            {
+                                foreach (var item in bag)
+                                {
+                                    results.Add(Convert.ChangeType(item, type));
+                                }
                             }
                         }
                     }
@@ -75,10 +88,11 @@ namespace GitAnalyzer.UserControls
 
         internal void SetupModule(BaseModule module, GitRepository repo)
         {
+            labelRepository.Text = repo.GetName();
             Repository = repo;
             Module = module;
-
-            labelModule.Text = Module.ModuleName;
+            Module.ModuleParameters.Branch = repo.GetCheckedOutBranch();
+            propertyGrid1.SelectedObject = module.ModuleParameters;
             Module.ModuleProgressChanged += Module_ModuleProgressChanged;
             Module.ModuleExecutionFinished += Module_ModuleExecutionFinished;
         }
@@ -96,6 +110,35 @@ namespace GitAnalyzer.UserControls
         private void button1_Click(object sender, EventArgs e)
         {
             Module.Run(Repository);
+        }
+
+        private void buttonRemoveModule_Click(object sender, EventArgs e)
+        {
+            Parent.Controls.Remove(this);
+            this.Dispose();
+        }
+
+        private void buttonSaveDump_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.CheckPathExists = true;
+            saveFileDialog.FileName = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-{Module.ModuleName}-{Repository.GetSafeName()}.json";
+            if (saveFileDialog.ShowDialog()== DialogResult.OK)
+            {
+                File.WriteAllText(saveFileDialog.FileName,JsonConvert.SerializeObject(Module.ModuleResult, Formatting.Indented));
+            }
+        }
+
+        private void buttonLoadDump_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = $"{Module.ModuleName}|*{Module.ModuleName}*";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                Module.SetResult(JsonConvert.DeserializeObject<IList>(File.ReadAllText(openFileDialog.FileName)));
+                tabControl1.SelectedIndex = 1;
+            }
         }
     }
 }

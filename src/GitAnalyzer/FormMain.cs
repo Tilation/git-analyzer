@@ -1,14 +1,7 @@
 ﻿using GitAnalyzer.Modules;
 using GitAnalyzer.Modules.GitObjects;
 using GitAnalyzer.UserControls;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace GitAnalyzer
@@ -25,11 +18,11 @@ namespace GitAnalyzer
         void BuildModuleMenu()
         {
             var builtIn = ModuleLoader.GetInternalModules();
-            foreach(var module in builtIn)
+            foreach (var module in builtIn)
             {
                 ToolStripMenuItem button = new ToolStripMenuItem();
                 button.Text = module.ModuleName;
-                RegisterModuleAction(button, module);
+                RegisterModuleAction(button, module.GetType());
                 modulesToolStripMenuItem.DropDownItems.Add(button);
             }
             modulesToolStripMenuItem.DropDownItems.Add(new ToolStripSeparator());
@@ -40,7 +33,7 @@ namespace GitAnalyzer
                 {
                     var button = new ToolStripMenuItem();
                     button.Text = module.ModuleName;
-                    RegisterModuleAction(button, module);
+                    RegisterModuleAction(button, module.GetType());
                     modulesToolStripMenuItem.DropDownItems.Add(button);
                 }
             }
@@ -56,27 +49,43 @@ namespace GitAnalyzer
             modulesToolStripMenuItem.DropDown.AutoSize = true;
         }
 
-        private void RegisterModuleAction(ToolStripMenuItem button, BaseModule module)
+        private void RegisterModuleAction(ToolStripMenuItem button, Type moduleType)
         {
             button.Click += (sender, args) =>
             {
                 if (Repository == null)
                 {
-                    MessageBox.Show("First select a valid GIT repository.");
-                    return;
+                    Repository = BrowseForRepository();
+                    if (Repository == null) return;
+                }
+                else
+                {
+                    var dr = MessageBox.Show($"Use last GIT repository? {Repository.GetName()}", "Git Analyzer", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (dr == DialogResult.No)
+                    {
+                        Repository = BrowseForRepository();
+                        if (Repository == null) return;
+                    }
                 }
                 ModuleControl control = new ModuleControl();
-                control.SetupModule(module, Repository);
+                var module = (BaseModule)Activator.CreateInstance(moduleType);
+                control.SetupModule((BaseModule)Activator.CreateInstance(moduleType), Repository);
                 control.Dock = DockStyle.Fill;
 
                 var tab = new TabPage(module.ModuleName);
                 tab.Controls.Add(control);
                 tabControl1.TabPages.Add(tab);
+
+                control.Disposed += (s, a) =>
+                {
+                    tabControl1.TabPages.Remove(tab);
+                };
             };
         }
 
-        private void selectGITRepositoryToolStripMenuItem_Click(object sender, EventArgs e)
+        GitRepository BrowseForRepository()
         {
+            GitRepository repo = null;
             FolderBrowserDialog ofd = new FolderBrowserDialog();
             DialogResult result;
             do
@@ -84,20 +93,25 @@ namespace GitAnalyzer
                 result = ofd.ShowDialog();
                 if (result == DialogResult.OK)
                 {
-                    Repository = new GitRepository(ofd.SelectedPath);
-                    if (!Repository.Exists())
+                    repo = new GitRepository(ofd.SelectedPath);
+                    if (!repo.Exists())
                     {
-                        Repository = null;
+                        repo = null;
                         MessageBox.Show($"There is no repository at {ofd.SelectedPath}");
                     }
                 }
-            } while (result == DialogResult.OK && Repository == null);
-            Text = $"Git Analyzer - Selected Repo: {Repository.RepositoryPath}";
+            } while (result == DialogResult.OK && repo == null);
+            return repo;
         }
 
         private void FormMain_Load(object sender, EventArgs e)
         {
             GitRepository.CollectGitInfo();
+            if (!GitRepository.IsGitInstalled)
+            {
+                MessageBox.Show("GIT was not found, install it and restart the application.");
+                Application.Exit();
+            }
         }
     }
 }

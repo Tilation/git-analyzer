@@ -51,6 +51,7 @@
     <Compile Include="GitObjects\GitObject.cs" />
     <Compile Include="GitObjects\GitRepository.cs" />
     <Compile Include="ModuleLoader.cs" />
+    <Compile Include="ModuleParameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SearchableAttribute.cs" />
   </ItemGroup>
