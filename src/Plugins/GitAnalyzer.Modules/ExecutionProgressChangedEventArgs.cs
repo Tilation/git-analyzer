@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GitAnalyzer.Modules
 {
-    public sealed class ExecutionProgressChangedEventArgs : EventArgs
+    public sealed class ExecutionLogMessageReceivedEventArgs : EventArgs
     {
         public string State { get; set; }
     }
