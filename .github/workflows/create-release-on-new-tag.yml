@@ -53,30 +53,21 @@ jobs:
         files: ${{env.PathToPlugins}}
         dest: plugins.zip
 
+    - name: Generate Changelog
+      id: changelog
+      uses: gandarez/changelog-action@v{latest}
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        body: ${{steps.changelog.outputs.changelog}}
         tag_name: ${{ github.ref_name }}
         release_name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
-
-    - name: Update CHANGELOG
-      id: changelog
-      uses: Requarks/changelog-action@v1
-      with:
-        token: ${{ github.token }}
-        tag: ${{ github.ref_name }}
-
-    - name: Edit Release
-      uses: irongut/EditRelease@v1.2.0
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        id: ${{ steps.create_release.outputs.id }}
-        body: ${{ steps.changelog.outputs.changes}}
 
     - name: Upload Release Asset
       id: upload-release-asset 
