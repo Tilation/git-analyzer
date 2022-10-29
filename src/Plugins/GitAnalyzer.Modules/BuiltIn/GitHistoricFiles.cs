@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace GitAnalyzer.Modules.BuiltIn
 {
-    public class GitObjects : BaseModule
+    public sealed class GitHistoricFiles : BaseModule
     {
         private readonly Regex reg = new Regex(@"(\w+)\s+(\w+)\s+(\w+)\s+(.*?)\s+(.*)", RegexOptions.Compiled);
         public override string ModuleName => "List historic files";
@@ -47,7 +47,7 @@ namespace GitAnalyzer.Modules.BuiltIn
             };
             bgWorker.ProgressChanged += (s, e) =>
             {
-                SubmitProgressChanged(e.UserState.ToString());
+                SubmitLogMessage(e.UserState.ToString());
             };
             bgWorker.RunWorkerAsync();
         }

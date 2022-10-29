@@ -93,7 +93,7 @@ namespace GitAnalyzer.UserControls
             Module = module;
             Module.ModuleParameters.Branch = repo.GetCheckedOutBranch();
             propertyGrid1.SelectedObject = module.ModuleParameters;
-            Module.ModuleProgressChanged += Module_ModuleProgressChanged;
+            Module.ModuleLogMessageReceived += Module_ModuleProgressChanged;
             Module.ModuleExecutionFinished += Module_ModuleExecutionFinished;
         }
 
@@ -102,7 +102,7 @@ namespace GitAnalyzer.UserControls
             dataGridView1.DataSource = args.Result;
         }
 
-        private void Module_ModuleProgressChanged(BaseModule sender, ExecutionProgressChangedEventArgs state)
+        private void Module_ModuleProgressChanged(BaseModule sender, ExecutionLogMessageReceivedEventArgs state)
         {
             listBox1.SelectedIndex = listBox1.Items.Add(state.State);
         }
