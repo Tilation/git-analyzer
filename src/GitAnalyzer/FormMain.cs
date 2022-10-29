@@ -107,6 +107,11 @@ namespace GitAnalyzer
         private void FormMain_Load(object sender, EventArgs e)
         {
             GitRepository.CollectGitInfo();
+            if (!GitRepository.IsGitInstalled)
+            {
+                MessageBox.Show("GIT was not found, install it and restart the application.");
+                Application.Exit();
+            }
         }
     }
 }
