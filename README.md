@@ -1,1 +1,1 @@
-# git-big-files
+# Git Analyzer
