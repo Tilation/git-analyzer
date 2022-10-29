@@ -42,6 +42,40 @@ namespace GitAnalyzer.Modules.GitObjects
             return false;
         }
 
+        public bool TryCheckOutBranch(string branch)
+        {
+            if (RunGit($"git checkout {branch}", out string output))
+            {
+                return !output.StartsWith("error");
+            }
+            return false;
+        }
+
+        public string[] GetBranchNames()
+        {
+            if (RunGit("git branch", out string output))
+            {
+                var branches = output.Split('\n').Where(x => !string.IsNullOrWhiteSpace(x)).Select(x =>
+                {
+                    x = x.Trim();
+                    if (x.StartsWith("* ")) return x.Substring(2);
+                    return x;
+                }).ToArray();
+                return branches;
+            }
+            return new string[0];
+        }
+
+        public string GetCheckedOutBranch()
+        {
+            if (RunGit("git branch", out string output))
+            {
+                var branch = output.Split('\n').FirstOrDefault(x => x.StartsWith("* ")).Substring(2);
+                return branch;
+            }
+            return null;
+        }
+
         public bool RunGit(string command, out string output)
         {
             if (!IsGitInstalled)
@@ -60,7 +94,7 @@ namespace GitAnalyzer.Modules.GitObjects
             cmd.StartInfo.Arguments = $"/C cd {RepositoryPath} && {drive}: && {command}";
             cmd.Start();
 
-            output = cmd.StandardOutput.ReadToEnd();
+            output = cmd.StandardOutput.ReadToEnd().Trim();
             return cmd.ExitCode == 0;
         }
 
@@ -81,6 +115,30 @@ namespace GitAnalyzer.Modules.GitObjects
         internal void Report(string v)
         {
             UpdateProgress?.Invoke(v);
+        }
+
+        public string GetName()
+        {
+            if (RunGit("git rev-parse --show-toplevel", out string output))
+            {
+                return output;
+            }
+            return null;
+        }
+
+        public string GetSafeName()
+        {
+            if (RunGit("git rev-parse --show-toplevel", out string output))
+            {
+                if (output.IndexOf('/') >= 0)
+                {
+                    return output.Split('/').Last();
+                }else
+                {
+                    return output.Split('\\').Last();
+                }
+            }
+            return null;
         }
     }
 }

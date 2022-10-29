@@ -14,13 +14,13 @@ namespace GitAnalyzer.Modules.BuiltIn
     public class GitObjects : BaseModule
     {
         private readonly Regex reg = new Regex(@"(\w+)\s+(\w+)\s+(\w+)\s+(.*?)\s+(.*)", RegexOptions.Compiled);
-
-        public override object ModuleParameters => new object();
         public override string ModuleName => "List historic files";
         public override Func<object, object> DefaultSort => x => ((GitObject)x)?.FileSizeInBytes;
 
         protected override void ExecuteModule(GitRepository repo)
         {
+            var branches = repo.GetBranchNames();
+            var branch = repo.GetCheckedOutBranch();
             BackgroundWorker bgWorker = new BackgroundWorker();
             bgWorker.WorkerReportsProgress = true;
             bgWorker.DoWork += (s, e) =>
