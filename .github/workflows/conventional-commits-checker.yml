@@ -5,7 +5,24 @@ on:
 jobs:
   conventional-commits:
     runs-on: ubuntu-latest
+    env:
+      PathToSolution: src
+      SolutionName: GitAnalyzer.sln
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        
       - name: Conventional Commits
-      - uses: actions/checkout@v2
-      - uses: webiny/action-conventional-commits@v1.0.3
+        uses: webiny/action-conventional-commits@v1.0.3
+        
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: Nuget
+        uses: nuget/setup-nuget@v1
+
+      - name: Nuget restore
+        run: nuget restore ${{env.PathToSolution}}/${{env.SolutionName}}
+      
+      - name: Build app for release
+        run: msbuild ${{env.PathToSolution}}/${{env.SolutionName}} -t:rebuild -property:Configuration=Release
