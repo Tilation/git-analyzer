@@ -55,7 +55,7 @@ jobs:
 
     - name: Generate Changelog
       id: changelog
-      uses: gandarez/changelog-action@v{latest}
+      uses: gandarez/changelog-action@v1.2
 
     - name: Create Release
       id: create_release
