@@ -1,15 +1,12 @@
 name: Create release on new release tag
 on:
   push:
-    tags: 'release-*'
+    tags: 'v*'
     branches: 'main'
 
 jobs:
   build:
     if: github.event_name == 'push' && contains(github.ref, 'refs/tags/')
-    strategy:
-      matrix:
-        configuration: [Release]
     runs-on: windows-2019  
     env:
       ReleaseVersion: not-set
