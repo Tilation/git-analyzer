@@ -44,11 +44,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseModule.cs" />
+    <Compile Include="BuiltIn\GitHistoricDirectories.cs" />
     <Compile Include="BuiltIn\GitHistoricFiles.cs" />
     <Compile Include="BuiltIn\GitCommitsPerAuthor.cs" />
     <Compile Include="ExecutionFinishedEventArgs.cs" />
     <Compile Include="ExecutionProgressChangedEventArgs.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="GitObjects\GitDirectory.cs" />
     <Compile Include="GitObjects\GitObject.cs" />
     <Compile Include="GitObjects\GitRepository.cs" />
     <Compile Include="ModuleLoader.cs" />
