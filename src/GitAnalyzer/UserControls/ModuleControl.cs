@@ -104,7 +104,15 @@ namespace GitAnalyzer.UserControls
 
         private void Module_ModuleProgressChanged(BaseModule sender, ExecutionLogMessageReceivedEventArgs state)
         {
-            listBox1.SelectedIndex = listBox1.Items.Add(state.State);
+            if (listBox1.InvokeRequired)
+            {
+                listBox1.Invoke(new Action(() => listBox1.SelectedIndex = listBox1.Items.Add(state.State)));
+            }
+            else
+            {
+                listBox1.SelectedIndex = listBox1.Items.Add(state.State);
+            }
+            
         }
 
         private void button1_Click(object sender, EventArgs e)
